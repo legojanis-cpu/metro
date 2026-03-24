@@ -1142,6 +1142,54 @@ input[type="range"]::-webkit-slider-thumb:active { cursor:grabbing; transform:sc
 #page-metro {
   flex-direction: row;
 }
+
+/* ================================================
+   RESPONSIVE — tablet and phone
+================================================ */
+@media (max-width: 900px) {
+  .shell { flex-direction: column; }
+  .sidebar { width:100%; min-width:0; height:auto; border-right:none; border-bottom:1px solid var(--border); flex-direction:row; overflow-x:auto; overflow-y:hidden; flex-shrink:0; }
+  .sb-nav { flex-direction:row; border-bottom:none; border-right:1px solid var(--border); flex-shrink:0; }
+  .sb-navbtn { height:52px; padding:0 14px; border-left:none; border-bottom:3px solid transparent; flex-direction:column; gap:2px; justify-content:center; min-width:64px; }
+  .sb-navbtn .nb-label { font-size:10px; letter-spacing:2px; }
+  .sb-navbtn.active { border-left-color:transparent; border-bottom-color:var(--brass); background:rgba(200,168,75,0.05); }
+  .sb-hint,.sb-section-label { display:none; }
+  .sb-artists { display:flex; flex-direction:row; overflow-x:auto; overflow-y:hidden; flex:1; }
+  .sb-artist { height:52px; border-left:none; border-bottom:3px solid transparent; padding:0 14px; flex-shrink:0; }
+  .sb-artist.active { border-left-color:transparent; border-bottom-color:var(--brass); }
+  .sb-artist-count { display:none; }
+  .sb-add-artist { height:52px; border-top:none; border-left:1px solid var(--border); padding:0 14px; flex-shrink:0; }
+  .midi-status { display:none; }
+  #page-metro { flex-direction:column; }
+  .ml { width:100%; min-width:0; border-right:none; border-bottom:1px solid var(--border); flex-direction:row; padding:10px 16px; gap:16px; height:auto; align-items:center; flex-shrink:0; }
+  .nameplate { display:none; }
+  .pstage { width:110px; min-width:110px; height:80px; flex:none; }
+  .accent-grid { flex:1; }
+  .accent-cell { min-height:0; }
+  .mnp { width:auto; flex:1; }
+  .mr { padding:14px 16px; gap:12px; }
+  .bpm-num { font-size:100px !important; }
+}
+
+@media (max-width: 600px) {
+  .ml { flex-direction:column; align-items:stretch; padding:10px 12px; gap:8px; }
+  .pstage { width:100%; height:70px; min-width:0; }
+  .mr { padding:10px 12px; gap:10px; }
+  .bpm-num { font-size:72px !important; }
+  .bpm-tap-row { flex-direction:column; gap:8px; }
+  .btn-tap-giant { min-height:64px; font-size:36px !important; width:100%; }
+  .ctrl-row { flex-wrap:wrap; gap:8px; }
+  .btn-startstop { min-width:120px; height:52px; font-size:22px; }
+  .slider-block { width:100%; flex-basis:100%; order:3; }
+  .btn-sig { width:38px; height:38px; font-size:12px; }
+  .btn-mult { height:44px; font-size:22px; }
+  .sl-topbar { height:auto; padding:8px 12px; flex-wrap:wrap; gap:8px; }
+  .sl-header { display:none; }
+  .srow { grid-template-columns:32px 1fr 60px 36px; height:56px; padding:0 12px; }
+  .srow-notes { display:none; }
+  .srow-title { font-size:18px; }
+  .srow-bpm { font-size:22px; }
+}
 </style>
 </head>
 <body>
@@ -1252,9 +1300,13 @@ input[type="range"]::-webkit-slider-thumb:active { cursor:grabbing; transform:sc
           <button class="btn-nudge" id="btnUp">+</button>
         </div>
         <div class="slider-block">
-          <div class="slider-track">
-            <div class="slider-fill" id="sfill"></div>
-            <input type="range" id="bpmSlider" min="20" max="240" value="120" step="1">
+          <div style="display:flex;align-items:center;gap:8px;width:100%">
+            <span style="font-size:9px;letter-spacing:2px;color:var(--dim);">VOL</span>
+            <div class="slider-track" style="flex:1">
+              <div class="slider-fill" id="sfill" style="width:70%"></div>
+              <input type="range" id="volSlider" min="0" max="100" value="70" step="1">
+            </div>
+            <span style="font-size:9px;letter-spacing:1px;color:var(--brass-dk);min-width:28px;" id="volDisplay">70%</span>
           </div>
         </div>
       </div>
@@ -1614,8 +1666,6 @@ function updateMetroUI(){
   const t=getTempo(bpm);
   document.getElementById('tempoMarking').textContent=t.n;
   document.getElementById('tempoRange').textContent=t.r;
-  document.getElementById('sfill').style.width=((bpm-20)/220*100)+'%';
-  document.getElementById('bpmSlider').value=bpm;
 }
 
 /* ================================================
@@ -2225,7 +2275,14 @@ document.getElementById('btnHalf').addEventListener('click',()=> applyOrQueueBpm
 
 // Metro controls
 document.getElementById('btnSS').addEventListener('click',()=>{ if(playing)stopMetro(); else startMetro(); });
-document.getElementById('bpmSlider').addEventListener('input',e=>{ bpm=parseInt(e.target.value); updateMetroUI(); });
+document.getElementById('volSlider').addEventListener('input',e=>{
+  clickVolume=parseInt(e.target.value)/100;
+  document.getElementById('sfill').style.width=e.target.value+'%';
+  document.getElementById('volDisplay').textContent=e.target.value+'%';
+  // sync settings panel slider too
+  const sv=document.getElementById('clickVol');
+  if(sv){ sv.value=e.target.value; document.getElementById('clickVolVal').textContent=e.target.value+'%'; }
+});
 document.getElementById('btnUp').addEventListener('click',()=>{ if(bpm<240){bpm++;updateMetroUI();} });
 document.getElementById('btnDn').addEventListener('click',()=>{ if(bpm>20){bpm--;updateMetroUI();} });
 document.getElementById('btnTapClick').addEventListener('click',doTap);
